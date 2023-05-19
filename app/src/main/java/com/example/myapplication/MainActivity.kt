@@ -55,15 +55,19 @@ class MainActivity : ComponentActivity() {
         val viewModel by viewModels<MainViewModel>()
         setContent {
             MyApplicationTheme {
-                // A surface container using the 'background' color from the theme
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.background)
-                ) {
-                        NewsScreen(viewModel)
-                }
+                StatApp(viewModel)
             }
+        }
+    }
+
+    @Composable
+    private fun StatApp(viewModel: MainViewModel) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            NewsScreen(viewModel)
         }
     }
 }
