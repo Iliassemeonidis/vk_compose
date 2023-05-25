@@ -36,17 +36,18 @@ import com.example.myapplication.domain.StatisticsItem
 import com.example.myapplication.domain.StatisticsType
 
 data class ActionStatistic(
-    val onViewItemClick : (StatisticsType) ->Unit,
-    val onShearItemClick : (StatisticsType) ->Unit,
-    val onCommentItemClick : (StatisticsType) ->Unit,
-    val onFavoriteItemClick : (StatisticsType) ->Unit,
+    val onViewItemClick: (FeedPost, StatisticsType) -> Unit,
+    val onShearItemClick: (FeedPost, StatisticsType) -> Unit,
+    val onCommentItemClick: (FeedPost, StatisticsType) -> Unit,
+    val onFavoriteItemClick: (FeedPost, StatisticsType) -> Unit,
+    val onItemRemove: (FeedPost) -> Unit
 )
 
 @Composable
 fun PostCard(
     modifier: Modifier,
     feedPost: FeedPost,
-    action : ActionStatistic
+    action: ActionStatistic,
 ) {
     Card(modifier = modifier) {
         PostHeader(feedPost)
@@ -61,13 +62,17 @@ fun PostCard(
             contentDescription = null,
         )
 
-        Statistics(feedPost.statistics, action)
+        Statistics(feedPost.statistics, action, feedPost)
 
     }
 }
 
 @Composable
-private fun Statistics(statistic : List<StatisticsItem>, action : ActionStatistic) {
+private fun Statistics(
+    statistic: List<StatisticsItem>,
+    action: ActionStatistic,
+    feedPost: FeedPost
+) {
 
     Row(
         modifier = Modifier
@@ -80,7 +85,7 @@ private fun Statistics(statistic : List<StatisticsItem>, action : ActionStatisti
             IconWithText(
                 Icons.Rounded.Person,
                 text = itemViews.count.toString(),
-                onItemClickListener = {action.onViewItemClick(itemViews.type)}
+                onItemClickListener = { action.onViewItemClick(feedPost,itemViews.type) }
             )
         }
         Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -88,22 +93,22 @@ private fun Statistics(statistic : List<StatisticsItem>, action : ActionStatisti
             IconWithText(
                 Icons.Rounded.Share,
                 itemShare.count.toString(),
-                onItemClickListener = {action.onShearItemClick(itemShare.type)}
+                onItemClickListener = { action.onShearItemClick(feedPost, itemShare.type) }
             )
 
             val itemComment = statistic.getItemByType(StatisticsType.COMMENT)
             IconWithText(Icons.Rounded.Email, itemComment.count.toString(),
-                onItemClickListener = {action.onCommentItemClick(itemComment.type)})
+                onItemClickListener = { action.onCommentItemClick(feedPost,itemComment.type) })
 
             val itemFavorite = statistic.getItemByType(StatisticsType.FAVORITE)
             IconWithText(Icons.Rounded.Favorite, itemFavorite.count.toString(),
-                onItemClickListener = {action.onFavoriteItemClick(itemFavorite.type)}
+                onItemClickListener = { action.onFavoriteItemClick(feedPost, itemFavorite.type) }
             )
         }
     }
 }
 
-private fun List<StatisticsItem>.getItemByType(type : StatisticsType) : StatisticsItem{
+private fun List<StatisticsItem>.getItemByType(type: StatisticsType): StatisticsItem {
     return this.find { it.type == type } ?: throw IllegalAccessException()
 }
 

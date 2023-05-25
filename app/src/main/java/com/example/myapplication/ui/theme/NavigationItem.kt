@@ -8,10 +8,10 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.myapplication.R
 
-sealed class NavigationItem(@StringRes val titleName : Int, val imageVector: ImageVector ){
+sealed class NavigationItem(@StringRes val titleName : Int, val imageVector: ImageVector, val root: String ){
 
-    object Home : NavigationItem(R.string.navigation_item_home, Icons.Outlined.Home)
-    object Favorite : NavigationItem(R.string.navigation_item_favorite, Icons.Outlined.Favorite)
-    object Profile : NavigationItem(R.string.navigation_item_profile, Icons.Outlined.Person)
+    object Home : NavigationItem(R.string.navigation_item_home, Icons.Outlined.Home, root = "home")
+    object Favorite : NavigationItem(R.string.navigation_item_favorite, Icons.Outlined.Favorite, root = "favorite")
+    object Profile : NavigationItem(R.string.navigation_item_profile, Icons.Outlined.Person, root = "profile")
 
 }
