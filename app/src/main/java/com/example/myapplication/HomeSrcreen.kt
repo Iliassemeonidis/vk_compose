@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -19,33 +20,30 @@ import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.lazy.items
-import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
 import com.example.myapplication.domain.FeedPost
 import com.example.myapplication.navigation.AppNavGraph
-import com.example.myapplication.navigation.Screens
 import com.example.myapplication.navigation.rememberNavigationState
-import com.example.myapplication.ui.theme.NavigationItem
+import com.example.myapplication.navigation.NavigationItem
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun NewsScreen(viewModel: MainViewModel) {
-
+fun NewsScreen() {
+    val viewModel: NewsFeedViewModel = viewModel()
     val listItem = listOf(NavigationItem.Home, NavigationItem.Favorite, NavigationItem.Profile)
-    val vm = viewModel.feedPosts.observeAsState(listOf())
 
     val navController = rememberNavigationState()
 
@@ -53,7 +51,6 @@ fun NewsScreen(viewModel: MainViewModel) {
     val action = ActionStatistic(
         onViewItemClick = viewModel::updateFeedPostItem,
         onShearItemClick = viewModel::updateFeedPostItem,
-        onCommentItemClick = viewModel::updateFeedPostItem,
         onFavoriteItemClick = viewModel::updateFeedPostItem,
         onItemRemove = viewModel::removeItem
     )
@@ -63,13 +60,19 @@ fun NewsScreen(viewModel: MainViewModel) {
             NavigationBar {
 
                 val backStack by navController.navController.currentBackStackEntryAsState()
-                val route = backStack?.destination?.route
 
                 listItem.forEach { item ->
+
+                    val selected = backStack?.destination?.hierarchy?.any {
+                        it.route == item.screens.root
+                    } ?: false
+
                     NavigationBarItem(
-                        selected = route == item.root,
+                        selected = selected,
                         onClick = {
-                            navController.navigateTo(item.root)
+                            if (!selected) {
+                                navController.navigateTo(item.screens.root)
+                            }
                         },
                         icon = { Icon(item.imageVector, contentDescription = null) },
                         label = { Text(text = stringResource(id = item.titleName)) }
@@ -80,7 +83,19 @@ fun NewsScreen(viewModel: MainViewModel) {
     ) {
         AppNavGraph(
             navController = navController.navController,
-            homeNavigateDestination = { HomeScreen(vm, action) },
+            newsFeedNavigateDestination = {
+                HomeScreen(action) {
+                    navController.navigateToComment(it)
+                }
+            },
+            commentsNavigateDestination = { feedPost ->
+                CommentsScreen(
+                    onBackPress = {
+                        navController.navController.popBackStack()
+                    },
+                   feedPost =  feedPost
+                )
+            },
             favoriteNavigateDestination = { NewScreen("Favorite") },
             profileNavigateDestination = { NewScreen("Profile") }
         )
@@ -104,13 +119,33 @@ fun NewScreen(text: String) {
 }
 
 @Composable
-@OptIn(
-    ExperimentalMaterial3Api::class,
-    ExperimentalFoundationApi::class
-)
 private fun HomeScreen(
-    feedPosts: State<List<FeedPost>>,
     action: ActionStatistic,
+    onCommentItemClick: (FeedPost) -> Unit
+) {
+    val viewModel: NewsFeedViewModel = viewModel()
+    val screenState = viewModel.screenState.observeAsState(NewsFeedScreenState.Initial)
+
+
+
+    when (val currentState = screenState.value) {
+        is NewsFeedScreenState.Post -> {
+            FeedPosts(feedPosts = currentState.feedPosts, action, onCommentItemClick)
+        }
+
+        is NewsFeedScreenState.Initial -> {}
+
+    }
+
+
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+private fun FeedPosts(
+    feedPosts: List<FeedPost>,
+    action: ActionStatistic,
+    onCommentItemClick: (FeedPost) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -118,7 +153,7 @@ private fun HomeScreen(
             .padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(feedPosts.value, key = { it.id }) { model ->
+        items(feedPosts, key = { it.id }) { model ->
             val dismiss = rememberDismissState()
 
             if (dismiss.isDismissed(DismissDirection.EndToStart)) {
@@ -133,8 +168,8 @@ private fun HomeScreen(
                     PostCard(
                         Modifier,
                         feedPost = model,
-                        action = action,
-                    )
+                        action = action
+                    ) { onCommentItemClick(it) }
                 },
                 background = {
                     Box(

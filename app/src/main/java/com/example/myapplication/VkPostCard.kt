@@ -38,7 +38,6 @@ import com.example.myapplication.domain.StatisticsType
 data class ActionStatistic(
     val onViewItemClick: (FeedPost, StatisticsType) -> Unit,
     val onShearItemClick: (FeedPost, StatisticsType) -> Unit,
-    val onCommentItemClick: (FeedPost, StatisticsType) -> Unit,
     val onFavoriteItemClick: (FeedPost, StatisticsType) -> Unit,
     val onItemRemove: (FeedPost) -> Unit
 )
@@ -48,6 +47,7 @@ fun PostCard(
     modifier: Modifier,
     feedPost: FeedPost,
     action: ActionStatistic,
+    onCommentItemClick: (FeedPost) -> Unit
 ) {
     Card(modifier = modifier) {
         PostHeader(feedPost)
@@ -62,7 +62,7 @@ fun PostCard(
             contentDescription = null,
         )
 
-        Statistics(feedPost.statistics, action, feedPost)
+        Statistics(feedPost.statistics, action, feedPost, onCommentItemClick)
 
     }
 }
@@ -71,9 +71,9 @@ fun PostCard(
 private fun Statistics(
     statistic: List<StatisticsItem>,
     action: ActionStatistic,
-    feedPost: FeedPost
+    feedPost: FeedPost,
+    onCommentItemClick: (FeedPost) -> Unit
 ) {
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -98,7 +98,10 @@ private fun Statistics(
 
             val itemComment = statistic.getItemByType(StatisticsType.COMMENT)
             IconWithText(Icons.Rounded.Email, itemComment.count.toString(),
-                onItemClickListener = { action.onCommentItemClick(feedPost,itemComment.type) })
+                onItemClickListener = {
+                    onCommentItemClick(feedPost)
+                }
+            )
 
             val itemFavorite = statistic.getItemByType(StatisticsType.FAVORITE)
             IconWithText(Icons.Rounded.Favorite, itemFavorite.count.toString(),

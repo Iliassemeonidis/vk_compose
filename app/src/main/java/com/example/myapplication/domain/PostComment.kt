@@ -2,7 +2,7 @@ package com.example.myapplication.domain
 
 import com.example.myapplication.R
 
-data class FeedComments(
+data class PostComment(
     val id : Int = 0,
     val iconId : Int = R.drawable.ic_man,
     val authorName : String = "User name WTF",
