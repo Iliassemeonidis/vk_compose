@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.presintation.news
 
 import com.example.myapplication.domain.FeedPost
 

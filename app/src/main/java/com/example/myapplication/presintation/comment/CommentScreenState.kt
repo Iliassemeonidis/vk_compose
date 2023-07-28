@@ -1,4 +1,4 @@
-package com.example.myapplication
+package com.example.myapplication.presintation.comment
 
 import com.example.myapplication.domain.FeedPost
 import com.example.myapplication.domain.PostComment

@@ -20,11 +20,9 @@ import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -38,6 +36,9 @@ import com.example.myapplication.domain.FeedPost
 import com.example.myapplication.navigation.AppNavGraph
 import com.example.myapplication.navigation.rememberNavigationState
 import com.example.myapplication.navigation.NavigationItem
+import com.example.myapplication.presintation.comment.CommentsScreen
+import com.example.myapplication.presintation.news.NewsFeedScreenState
+import com.example.myapplication.presintation.news.NewsFeedViewModel
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
