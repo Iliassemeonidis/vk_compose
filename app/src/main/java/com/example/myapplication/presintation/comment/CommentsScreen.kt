@@ -110,6 +110,8 @@ fun CommentsScreen(
 @Composable
 fun CommentPreview() {
     MyApplicationTheme() {
-        CommentsScreen(feedPost = FeedPost(), onBackPress = {})
+        CommentsScreen(feedPost = FeedPost(0,"","",
+            "","","", listOf()
+        ), onBackPress = {})
     }
 }

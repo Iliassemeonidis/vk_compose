@@ -1,30 +1,38 @@
 package com.example.myapplication.presintation.news
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.mapper.NewsFeedMapper
+import com.example.myapplication.data.network.ApiFactory
 import com.example.myapplication.domain.FeedPost
 import com.example.myapplication.domain.StatisticsType
+import com.vk.api.sdk.VKPreferencesKeyValueStorage
+import com.vk.api.sdk.auth.VKAccessToken
+import kotlinx.coroutines.launch
 
-class NewsFeedViewModel() : ViewModel() {
+class NewsFeedViewModel(application: Application) : AndroidViewModel(application) {
+    private val initial = NewsFeedScreenState.Initial
 
-    val initial = mutableListOf<FeedPost>().apply {
-        repeat(5) {
-            add(
-                FeedPost(
-                    id = it,
-                    groupName = "Simpson Family $it"
-                )
-            )
-        }
+    private val _screenSate = MutableLiveData<NewsFeedScreenState>(initial)
+    val screenState: LiveData<NewsFeedScreenState> = _screenSate
+
+    init {
+        loadUserNewsFeed(application)
     }
 
+    private fun loadUserNewsFeed(application: Application) {
+        viewModelScope.launch {
+            val keyValueStorage = VKPreferencesKeyValueStorage(application)
+            val token = VKAccessToken.restore(keyValueStorage) ?: return@launch
+            val responseDto = ApiFactory.apiService.loadUserNewsfeed(token.accessToken)
+            val feedPosts = NewsFeedMapper.mapResponseToPosts(responseDto)
 
-
-    private val initialState = NewsFeedScreenState.Post(initial)
-
-    private var _screenSate = MutableLiveData<NewsFeedScreenState>(initialState)
-    val screenState: LiveData<NewsFeedScreenState> = _screenSate
+            _screenSate.value = NewsFeedScreenState.Post(feedPosts)
+        }
+    }
 
 
     fun updateFeedPostItem(feedPost: FeedPost, item: StatisticsType) {

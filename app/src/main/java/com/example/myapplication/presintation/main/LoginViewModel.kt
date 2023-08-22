@@ -1,20 +1,28 @@
 package com.example.myapplication.presintation.main
 
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import com.vk.api.sdk.VK
+import com.vk.api.sdk.VKPreferencesKeyValueStorage
+import com.vk.api.sdk.auth.VKAccessToken
 import com.vk.api.sdk.auth.VKAuthenticationResult
 
-class LoginViewModel() : ViewModel() {
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     private var _authState = MutableLiveData<LoginAppState>(LoginAppState.InProgress)
     val authState: LiveData<LoginAppState> = _authState
 
     init {
-        _authState.value =
-            if (VK.isLoggedIn()) LoginAppState.Success
+        val keyValueStorage = VKPreferencesKeyValueStorage(application)
+        val token = VKAccessToken.restore(keyValueStorage)
+        val isTokenValid = token != null && token.isValid
+        _authState.value = if (isTokenValid) LoginAppState.Success
             else LoginAppState.InProgress
+
+        if(isTokenValid) Log.i("USER_TOKEN", "${token?.accessToken}")
+
     }
 
     fun checkUserLogin(result: VKAuthenticationResult) {

@@ -1,6 +1,5 @@
 package com.example.myapplication.presintation.news
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Email
@@ -28,9 +29,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.myapplication.domain.FeedPost
 import com.example.myapplication.domain.StatisticsItem
 import com.example.myapplication.domain.StatisticsType
@@ -57,8 +58,9 @@ fun PostCard(
             modifier = Modifier.padding(8.dp)
         )
 
-        Image(
-            painter = painterResource(id = feedPost.contentImage),
+        AsyncImage(
+            model = feedPost.contentImageUrl,
+            modifier = Modifier.wrapContentWidth(),
             contentDescription = null,
         )
 
@@ -135,12 +137,12 @@ private fun PostHeader(feedPost: FeedPost) {
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
+        AsyncImage(
+            model =  feedPost.profileUrl,
             modifier = Modifier
                 .size(50.dp)
                 .clip(CircleShape)
-                .background(Color.Yellow),
-            painter = painterResource(id = feedPost.profileId), contentDescription = null
+                .background(Color.Yellow), contentDescription = null
         )
         Spacer(modifier = Modifier.size(8.dp))
         Column(modifier = Modifier.weight(1f)) {
