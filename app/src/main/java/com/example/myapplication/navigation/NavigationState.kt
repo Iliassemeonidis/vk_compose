@@ -1,5 +1,6 @@
 package com.example.myapplication.navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -19,7 +20,6 @@ class NavigationState(
             restoreState = true
         }
     }
-
 
     fun navigateToComment(feedPost: FeedPost){
         navController.navigate(Screens.Comments.getCommentRrg(feedPost))

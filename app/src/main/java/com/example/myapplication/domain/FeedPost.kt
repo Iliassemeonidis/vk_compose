@@ -10,12 +10,16 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class FeedPost(
-    val id: Int = 0,
+    val id: Long,
+    val postId: Long,
+    val groupId : Int,
     val profileUrl: String,
     val groupName: String,
     val publishDate: String,
     val contentText: String,
     val contentImageUrl: String?,
+    val isLiked : Boolean,
+    val userPhoto : String = "photo_100",
     var statistics: List<StatisticsItem>
 
 
@@ -23,9 +27,8 @@ data class FeedPost(
     companion object {
         val NavTypeFeedPost: NavType<FeedPost> = object : NavType<FeedPost>(false) {
 
-            @RequiresApi(Build.VERSION_CODES.TIRAMISU)
             override fun get(bundle: Bundle, key: String): FeedPost? {
-                return bundle.getParcelable(key, FeedPost::class.java)
+                return bundle.getParcelable(key)
             }
 
             override fun parseValue(value: String): FeedPost {

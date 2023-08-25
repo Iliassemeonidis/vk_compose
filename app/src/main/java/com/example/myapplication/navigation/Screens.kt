@@ -1,7 +1,10 @@
 package com.example.myapplication.navigation
 
+import android.net.Uri
 import com.example.myapplication.domain.FeedPost
 import com.google.gson.Gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 sealed class Screens(
     val root: String
@@ -15,7 +18,7 @@ sealed class Screens(
         private const val COMMENT_ARG = "comments"
         fun getCommentRrg(feedPost: FeedPost): String {
             val newPost = Gson().toJson(feedPost)
-            return "$COMMENT_ARG/${newPost}"
+            return "$COMMENT_ARG/${newPost.encode()}"
         }
     }
 
@@ -27,5 +30,9 @@ sealed class Screens(
         private const val HOME_COMMENTS = "comments/{feed_post}"
         private const val FAVORITE_SCREEN = "favorite"
         private const val PROFILE_SCREEN = "profile"
+    }
+
+    fun String.encode(): String {
+        return Uri.encode(this)
     }
 }

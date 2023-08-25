@@ -10,11 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.magnifier
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,12 +27,14 @@ import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -48,6 +51,7 @@ import com.example.myapplication.presintation.news.ActionStatistic
 import com.example.myapplication.presintation.news.NewsFeedScreenState
 import com.example.myapplication.presintation.news.NewsFeedViewModel
 import com.example.myapplication.presintation.news.PostCard
+import kotlin.math.absoluteValue
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -56,15 +60,13 @@ fun NewsScreen() {
     val viewModel: NewsFeedViewModel = viewModel()
     val screenState = viewModel.screenState.observeAsState()
     val listItem = listOf(NavigationItem.Home, NavigationItem.Favorite, NavigationItem.Profile)
-
     val navController = rememberNavigationState()
 
 
     val action = ActionStatistic(
-        onViewItemClick = viewModel::updateFeedPostItem,
-        onShearItemClick = viewModel::updateFeedPostItem,
-        onFavoriteItemClick = viewModel::updateFeedPostItem,
-        onItemRemove = viewModel::removeItem
+        onChangeLikeStatus = viewModel::changeLikeStatus,
+        onItemRemove = viewModel::removeFeed,
+        onLoadNextFeed = viewModel::loadNextNewsFeed
     )
 
     Scaffold(
@@ -99,6 +101,7 @@ fun NewsScreen() {
                 HomeScreen(action, screenState) {
                     navController.navigateToComment(it)
                 }
+
             },
             commentsNavigateDestination = { feedPost ->
                 CommentsScreen(
@@ -138,16 +141,24 @@ private fun HomeScreen(
 ) {
     when (val result = screenState.value) {
         is NewsFeedScreenState.Post -> {
-            FeedPosts(feedPosts = result.feedPosts, action, onCommentItemClick)
+            FeedPosts(
+                feedPosts = result.feedPosts,
+                action,
+                isNextFrom = result.nextFrom,
+                onCommentItemClick
+            )
         }
 
         is NewsFeedScreenState.Initial -> {
-            CustomCircularProgressBar()
         }
 
-        else -> {
-
+        is NewsFeedScreenState.InProgress -> {
+            Box(modifier = Modifier.fillMaxSize()) {
+                CustomCircularProgressBar()
+            }
         }
+
+        else -> {}
     }
 }
 
@@ -177,6 +188,7 @@ private fun CustomCircularProgressBar() {
 private fun FeedPosts(
     feedPosts: List<FeedPost>,
     action: ActionStatistic,
+    isNextFrom: Boolean,
     onCommentItemClick: (FeedPost) -> Unit
 ) {
     LazyColumn(
@@ -212,6 +224,24 @@ private fun FeedPosts(
                     )
                 }
             )
+        }
+
+        item {
+            if (isNextFrom) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color.Blue)
+                }
+            } else {
+                SideEffect {
+                    action.onLoadNextFeed()
+                }
+            }
         }
     }
 }

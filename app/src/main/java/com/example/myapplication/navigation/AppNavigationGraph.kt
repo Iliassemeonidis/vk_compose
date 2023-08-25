@@ -26,7 +26,6 @@ fun AppNavGraph(
             newsFeedNavigateDestination,
             commentsNavigateDestination
         )
-
         composable(Screens.Favorite.root) {
             favoriteNavigateDestination()
         }

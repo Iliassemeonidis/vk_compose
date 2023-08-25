@@ -1,42 +1,34 @@
 package com.example.myapplication.presintation.comment
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.myapplication.data.repository.NewsFeedRepository
 import com.example.myapplication.domain.FeedPost
-import com.example.myapplication.domain.PostComment
+import kotlinx.coroutines.launch
 
 class CommentViewModel(
-    feedPost: FeedPost
+    feedPost: FeedPost,
+    application: Context
 ) : ViewModel() {
-
-
-    private val comments = mutableListOf<PostComment>().apply {
-        repeat(10) {
-            add(PostComment(id = it))
-        }
-    }
-
-
-
-
-//    private val initialState = CommentScreenState.Comment(initial)
-//
-//    private var savedState: CommentScreenState? = initialState
 
     private var _screenSate = MutableLiveData<CommentScreenState>(CommentScreenState.Initial)
     val screenState: LiveData<CommentScreenState> = _screenSate
 
+    private val repository = NewsFeedRepository(application = application)
+
     init {
+        _screenSate.value = CommentScreenState.IsProgress
         loadComments(feedPost)
     }
 
-    fun loadComments(feedPost: FeedPost) {
-      //  savedState = _screenSate.value
-        _screenSate.value = CommentScreenState.Comment(feedPost, comments)
+    private fun loadComments(feedPost: FeedPost) {
+        viewModelScope.launch {
+            val result = repository.getFeedPostsComment(feedPost)
+            _screenSate.value = CommentScreenState.Comment(feedPost, result)
+        }
     }
 
-//    fun closeComment() {
-//        _screenSate.value = savedState
-//    }
 }
