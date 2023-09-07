@@ -240,8 +240,6 @@ private fun FeedPosts(
                 SideEffect {
                     action.onLoadNextFeed()
 
-
-
                 }
             }
         }
