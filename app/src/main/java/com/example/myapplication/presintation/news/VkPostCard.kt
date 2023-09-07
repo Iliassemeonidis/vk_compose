@@ -28,11 +28,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.myapplication.R
-import com.example.myapplication.domain.FeedPost
-import com.example.myapplication.domain.StatisticsItem
-import com.example.myapplication.domain.StatisticsType
+import com.example.myapplication.domain.entity.FeedPost
+import com.example.myapplication.domain.entity.StatisticsItem
+import com.example.myapplication.domain.entity.StatisticsType
 import com.example.myapplication.ui.theme.DarkRed
-import kotlin.reflect.KFunction2
 
 data class ActionStatistic(
     val onChangeLikeStatus: (FeedPost) -> Unit,

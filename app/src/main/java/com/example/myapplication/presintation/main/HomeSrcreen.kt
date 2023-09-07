@@ -31,7 +31,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -43,23 +42,22 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.myapplication.domain.FeedPost
+import com.example.myapplication.domain.entity.FeedPost
 import com.example.myapplication.navigation.AppNavGraph
 import com.example.myapplication.navigation.NavigationItem
 import com.example.myapplication.navigation.rememberNavigationState
 import com.example.myapplication.presintation.comment.CommentsScreen
 import com.example.myapplication.presintation.news.ActionStatistic
-import com.example.myapplication.presintation.news.NewsFeedScreenState
+import com.example.myapplication.presintation.news.NewsFeedState
 import com.example.myapplication.presintation.news.NewsFeedViewModel
 import com.example.myapplication.presintation.news.PostCard
-import kotlin.math.absoluteValue
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun NewsScreen() {
     val viewModel: NewsFeedViewModel = viewModel()
-    val screenState = viewModel.screenState.collectAsState(NewsFeedScreenState.Initial)
+    val screenState = viewModel.screenState.collectAsState(NewsFeedState.Initial)
     val listItem = listOf(NavigationItem.Home, NavigationItem.Favorite, NavigationItem.Profile)
     val navController = rememberNavigationState()
 
@@ -137,11 +135,11 @@ fun NewScreen(text: String) {
 @Composable
 private fun HomeScreen(
     action: ActionStatistic,
-    screenState: State<NewsFeedScreenState?>,
+    screenState: State<NewsFeedState?>,
     onCommentItemClick: (FeedPost) -> Unit
 ) {
     when (val result = screenState.value) {
-        is NewsFeedScreenState.Post -> {
+        is NewsFeedState.Post -> {
             FeedPosts(
                 feedPosts = result.feedPosts,
                 action,
@@ -150,10 +148,10 @@ private fun HomeScreen(
             )
         }
 
-        is NewsFeedScreenState.Initial -> {
+        is NewsFeedState.Initial -> {
         }
 
-        is NewsFeedScreenState.InProgress -> {
+        is NewsFeedState.InProgress -> {
             Box(modifier = Modifier.fillMaxSize()) {
                 CustomCircularProgressBar()
             }

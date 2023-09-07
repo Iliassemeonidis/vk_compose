@@ -1,12 +1,11 @@
 package com.example.myapplication.navigation
 
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.example.myapplication.domain.FeedPost
+import com.example.myapplication.domain.entity.FeedPost
 
 class NavigationState(
     val navController: NavHostController

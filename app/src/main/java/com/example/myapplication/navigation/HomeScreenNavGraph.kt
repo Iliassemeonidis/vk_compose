@@ -4,13 +4,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
-import com.example.myapplication.domain.FeedPost
+import com.example.myapplication.domain.entity.FeedPost
 import com.example.myapplication.navigation.Screens.Companion.KEY_FEED_POST
-import com.google.gson.Gson
 import java.lang.RuntimeException
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)

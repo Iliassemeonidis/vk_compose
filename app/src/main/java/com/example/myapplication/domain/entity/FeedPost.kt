@@ -1,9 +1,7 @@
-package com.example.myapplication.domain
+package com.example.myapplication.domain.entity
 
-import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
-import androidx.annotation.RequiresApi
 import androidx.navigation.NavType
 import com.google.gson.Gson
 import kotlinx.parcelize.Parcelize

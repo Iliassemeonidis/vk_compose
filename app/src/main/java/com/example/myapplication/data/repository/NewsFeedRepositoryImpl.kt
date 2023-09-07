@@ -1,14 +1,17 @@
 package com.example.myapplication.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.example.myapplication.data.mapper.NewsFeedMapper
 import com.example.myapplication.data.mapper.NewsFeedMapper.mapResponseToComment
 import com.example.myapplication.data.network.ApiFactory
-import com.example.myapplication.domain.FeedPost
-import com.example.myapplication.domain.PostComment
-import com.example.myapplication.domain.StatisticsItem
-import com.example.myapplication.domain.StatisticsType
+import com.example.myapplication.domain.entity.FeedPost
+import com.example.myapplication.domain.entity.LoginAppState
+import com.example.myapplication.domain.entity.StatisticsItem
+import com.example.myapplication.domain.entity.StatisticsType
+import com.example.myapplication.domain.repository.NewsFeedRepository
 import com.example.myapplication.extention.mergeWith
+import com.example.myapplication.presintation.comment.CommentsState
 import com.vk.api.sdk.VKPreferencesKeyValueStorage
 import com.vk.api.sdk.auth.VKAccessToken
 import kotlinx.coroutines.CoroutineScope
@@ -16,27 +19,36 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
 
-class NewsFeedRepository(application: Context) {
+class NewsFeedRepositoryImpl(application: Context) : NewsFeedRepository {
 
     private val keyValueStorage = VKPreferencesKeyValueStorage(application)
-    private val token = VKAccessToken.restore(keyValueStorage)
+    private val token
+        get() = VKAccessToken.restore(keyValueStorage)
 
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
-    private val flowEvent = MutableSharedFlow<Unit>(1)
-
+    private val nextDataNededEvent = MutableSharedFlow<Unit>(1)
+    private val currentTokenStatus = MutableSharedFlow<Unit>(1)
     private val refreshListFlow = MutableSharedFlow<List<FeedPost>>()
 
     private val _feedPosts = mutableListOf<FeedPost>()
     private val feedPosts: List<FeedPost>
         get() = _feedPosts.toList()
 
+    private var nextFrom: String? = null
+
+    private fun getAccessToken(): String {
+        return token?.accessToken ?: throw IllegalAccessException("Token is null")
+    }
 
     private val loadListFeedPost = flow {
-        flowEvent.emit(Unit)
-        flowEvent.collect {
+        nextDataNededEvent.emit(Unit)
+        nextDataNededEvent.collect {
             val startFrom = nextFrom
 
             if (startFrom == null && feedPosts.isNotEmpty()) {
@@ -54,27 +66,47 @@ class NewsFeedRepository(application: Context) {
             _feedPosts.addAll(result)
             emit(feedPosts)
         }
+    }.retry(2) {
+        true
+    }.catch {
+        Log.i("wallListFeedPost", it.message.toString())
     }
 
-    private var nextFrom: String? = null
+    private val tokenStatus = flow {
+        currentTokenStatus.emit(Unit)
+        currentTokenStatus.collect {
+            val currentToken = token
+            val isTokenValid = currentToken != null && currentToken.isValid
+            val tokenResult = if (isTokenValid) LoginAppState.Success else LoginAppState.InProgress
+            emit(tokenResult)
+        }
 
-    val wallListFeedPost: StateFlow<List<FeedPost>> = loadListFeedPost
-        .mergeWith(refreshListFlow)
-        .stateIn(
+    }.stateIn(
         scope = coroutineScope,
         started = SharingStarted.Lazily,
-        initialValue = feedPosts
+        initialValue = LoginAppState.InProgress
     )
 
-    suspend fun loadNextData() {
-        flowEvent.emit(Unit)
+
+    private val userFeedPosts: StateFlow<List<FeedPost>> = loadListFeedPost
+        .mergeWith(refreshListFlow)
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.Lazily,
+            initialValue = feedPosts
+        )
+
+    override suspend fun checkAuthState() {
+        currentTokenStatus.emit(Unit)
     }
 
-    private fun getAccessToken(): String {
-        return token?.accessToken ?: throw IllegalAccessException("Token is null")
+    override suspend fun loadNextData() {
+        nextDataNededEvent.emit(Unit)
     }
 
-    suspend fun changeLikeStatus(feedPost: FeedPost) {
+    override fun getAuthStateFlow() = tokenStatus
+
+    override suspend fun changeLikeStatus(feedPost: FeedPost) {
         val response = if (feedPost.isLiked) {
             ApiFactory.apiService.deleteLike(
                 token = getAccessToken(),
@@ -101,8 +133,7 @@ class NewsFeedRepository(application: Context) {
         refreshListFlow.emit(feedPosts)
     }
 
-
-    suspend fun deleteFeedFromList(feedPost: FeedPost) {
+    override suspend fun deletePost(feedPost: FeedPost) {
         val response = ApiFactory.apiService.ignoreFeed(
             token = getAccessToken(),
             itemId = feedPost.postId,
@@ -116,7 +147,9 @@ class NewsFeedRepository(application: Context) {
         refreshListFlow.emit(feedPosts)
     }
 
-    suspend fun getFeedPostsComment(feedPost: FeedPost): List<PostComment> {
+    override fun getWallListFeedPost() = userFeedPosts
+
+    override fun getFeedPostsComment(feedPost: FeedPost): StateFlow<CommentsState> = flow {
         val response = ApiFactory.apiService.getComments(
             token = getAccessToken(),
             postId = feedPost.postId,
@@ -124,7 +157,14 @@ class NewsFeedRepository(application: Context) {
             extended = 1,
             fields = feedPost.userPhoto
         )
-        return mapResponseToComment(response)
+        emit(mapResponseToComment(response))
     }
-
+        .map { CommentsState.Success(comment = it) as CommentsState }
+        .retry(2) { true }
+        .catch { emit(CommentsState.Error(it)) }
+        .stateIn(
+            scope = coroutineScope,
+            started = SharingStarted.Lazily,
+            initialValue = CommentsState.Initial
+        )
 }

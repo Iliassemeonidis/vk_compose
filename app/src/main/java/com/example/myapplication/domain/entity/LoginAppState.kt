@@ -1,4 +1,4 @@
-package com.example.myapplication.presintation.main
+package com.example.myapplication.domain.entity
 
 sealed class LoginAppState{
     object InProgress : LoginAppState()

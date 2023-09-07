@@ -1,6 +1,4 @@
-package com.example.myapplication.domain
-
-import com.example.myapplication.R
+package com.example.myapplication.domain.entity
 
 data class PostComment(
     val id : Long ,

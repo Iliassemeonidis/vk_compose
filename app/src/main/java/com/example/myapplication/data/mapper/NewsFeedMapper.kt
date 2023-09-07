@@ -3,10 +3,10 @@ package com.example.myapplication.data.mapper
 import android.icu.text.SimpleDateFormat
 import com.example.myapplication.data.model.NewsFeedResponseDto
 import com.example.myapplication.data.model.ResponseCommentDto
-import com.example.myapplication.domain.FeedPost
-import com.example.myapplication.domain.PostComment
-import com.example.myapplication.domain.StatisticsItem
-import com.example.myapplication.domain.StatisticsType
+import com.example.myapplication.domain.entity.FeedPost
+import com.example.myapplication.domain.entity.PostComment
+import com.example.myapplication.domain.entity.StatisticsItem
+import com.example.myapplication.domain.entity.StatisticsType
 import java.util.Date
 import java.util.Locale
 import kotlin.math.absoluteValue

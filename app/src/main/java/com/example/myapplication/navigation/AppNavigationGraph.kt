@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.myapplication.domain.FeedPost
+import com.example.myapplication.domain.entity.FeedPost
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable

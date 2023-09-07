@@ -3,8 +3,12 @@ package com.example.myapplication.presintation.news
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.repository.NewsFeedRepository
-import com.example.myapplication.domain.FeedPost
+import com.example.myapplication.data.repository.NewsFeedRepositoryImpl
+import com.example.myapplication.domain.entity.FeedPost
+import com.example.myapplication.domain.usecases.ChangeLikeStatusUseCase
+import com.example.myapplication.domain.usecases.DeletePostUseCase
+import com.example.myapplication.domain.usecases.GetWallFeedPostUseCase
+import com.example.myapplication.domain.usecases.LoadNextDataUseCase
 import com.example.myapplication.extention.mergeWith
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filter
@@ -14,37 +18,47 @@ import kotlinx.coroutines.launch
 
 class NewsFeedViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = NewsFeedRepository(application = application)
+    private val repository = NewsFeedRepositoryImpl(application = application)
 
-    private val recommendationsFlow = repository.wallListFeedPost
+    val getWallFeedPostUseCase = GetWallFeedPostUseCase(repository)
 
-    private val loadNextDataFlow = MutableSharedFlow<NewsFeedScreenState>()
+    val loadNextDataUseCase = LoadNextDataUseCase(repository)
+    val changeLikeStatusUseCase = ChangeLikeStatusUseCase(repository)
+    val deletePostUseCase = DeletePostUseCase(repository)
+
+    private val recommendationsFlow = getWallFeedPostUseCase()
+
+    private val loadNextDataFlow = MutableSharedFlow<NewsFeedState>()
 
 
     val screenState = recommendationsFlow
         .filter { it.isNotEmpty() }
-        .map { NewsFeedScreenState.Post(it) as NewsFeedScreenState }
-        .onStart { emit(NewsFeedScreenState.InProgress) }
+        .map { NewsFeedState.Post(it) as NewsFeedState }
+        .onStart { emit(NewsFeedState.InProgress) }
         .mergeWith(loadNextDataFlow)
 
 
     fun loadNextNewsFeed() {
         viewModelScope.launch {
-            loadNextDataFlow.emit(NewsFeedScreenState.Post(recommendationsFlow.value, true))
-            repository.loadNextData()
+            loadNextDataFlow
+                .emit(
+                NewsFeedState.Post(
+                feedPosts = recommendationsFlow.value,
+                nextFrom = true
+            ))
+            loadNextDataUseCase()
         }
-
     }
 
     fun changeLikeStatus(feedPost: FeedPost) {
         viewModelScope.launch {
-            repository.changeLikeStatus(feedPost = feedPost)
+            changeLikeStatusUseCase(feedPost = feedPost)
         }
     }
 
     fun removeFeed(feedPost: FeedPost) {
         viewModelScope.launch {
-            repository.deleteFeedFromList(feedPost)
+            deletePostUseCase(feedPost)
         }
     }
 }

@@ -1,10 +1,9 @@
 package com.example.myapplication.presintation.comment
 
-import android.app.Application
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.myapplication.domain.FeedPost
+import com.example.myapplication.domain.entity.FeedPost
 
 class CommentViewModelFactory(
     private val feedPost: FeedPost,

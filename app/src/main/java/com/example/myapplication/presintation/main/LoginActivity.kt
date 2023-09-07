@@ -2,6 +2,7 @@ package com.example.myapplication.presintation.main
 
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -11,14 +12,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.myapplication.domain.entity.LoginAppState
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKScope
 
-class MainActivity : ComponentActivity() {
+class LoginActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,19 +30,24 @@ class MainActivity : ComponentActivity() {
 
                 val vm: LoginViewModel = viewModel()
 
-                val result = vm.authState.observeAsState()
+                val result = vm.authState.collectAsState(LoginAppState.InProgress)
 
                 val launcher = rememberLauncherForActivityResult(
                     contract = VK.getVKAuthActivityResultContract()
                 ) {
-                    vm.checkUserLogin(it)
+                    vm.checkUserLogin()
                 }
 
-                if (result.value == LoginAppState.Success) {
-                    StatApp()
-                } else {
-                    LoginScreen {
+                when (result.value) {
+                    LoginAppState.Failure -> {
+                        Log.i("MainActivity", "Error")
+                    }
+                    LoginAppState.InProgress -> {
+                        LoginScreen {
                         launcher.launch(arrayListOf(VKScope.WALL, VKScope.FRIENDS))
+                    }}
+                    LoginAppState.Success -> {
+                        StatApp()
                     }
                 }
             }

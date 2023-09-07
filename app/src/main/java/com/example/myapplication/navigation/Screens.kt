@@ -1,10 +1,8 @@
 package com.example.myapplication.navigation
 
 import android.net.Uri
-import com.example.myapplication.domain.FeedPost
+import com.example.myapplication.domain.entity.FeedPost
 import com.google.gson.Gson
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 sealed class Screens(
     val root: String

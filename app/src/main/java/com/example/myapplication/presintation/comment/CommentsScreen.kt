@@ -1,5 +1,6 @@
 package com.example.myapplication.presintation.comment
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,21 +27,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.myapplication.R
-import com.example.myapplication.domain.FeedPost
+import com.example.myapplication.domain.entity.FeedPost
 
 @Composable
 fun CommentsScreen(
@@ -54,7 +53,7 @@ fun CommentsScreen(
             feedPost = feedPost
         )
     )
-    val screenState = viewModel.screenState.observeAsState(CommentScreenState.Initial)
+    val screenState = viewModel.screenState.collectAsState(CommentScreenState.Initial)
 
     when (val currentState = screenState.value) {
         is CommentScreenState.Comment -> {
@@ -74,6 +73,10 @@ fun CommentsScreen(
             ) {
                 CircularProgressIndicator(color = Color.Blue)
             }
+        }
+
+        is CommentScreenState.Error -> {
+            Toast.makeText(LocalContext.current, currentState.message.toString() , Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -187,6 +190,24 @@ private fun Comment(
                     }
                 }
             }
+            //todo impl upload comments
+//            item {
+//                if (isNextFrom) {
+//                    Box(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .wrapContentSize()
+//                            .padding(16.dp),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        CircularProgressIndicator(color = Color.Blue)
+//                    }
+//                } else {
+//                    SideEffect {
+//                        action.onLoadNextFeed()
+//                    }
+//                }
+//            }
         }
     )
 }
