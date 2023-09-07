@@ -239,9 +239,6 @@ private fun FeedPosts(
             } else {
                 SideEffect {
                     action.onLoadNextFeed()
-
-
-
                 }
             }
         }
