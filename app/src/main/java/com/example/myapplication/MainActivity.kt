@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
                 .background(MaterialTheme.colorScheme.background)
         ) {
             NewsScreen(viewModel)
+
         }
     }
 }
