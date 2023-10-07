@@ -36,13 +36,12 @@ class NewsFeedViewModel @Inject constructor(
 
     fun loadNextNewsFeed() {
         viewModelScope.launch {
-            loadNextDataFlow
-                .emit(
-                    NewsFeedState.Post(
-                        feedPosts = recommendationsFlow.value,
-                        nextFrom = true
-                    )
+            loadNextDataFlow.emit(
+                NewsFeedState.Post(
+                    feedPosts = recommendationsFlow.value,
+                    nextFrom = true
                 )
+            )
             loadNextDataUseCase()
         }
     }

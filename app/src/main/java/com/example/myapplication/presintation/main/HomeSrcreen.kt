@@ -45,19 +45,23 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.myapplication.domain.entity.FeedPost
 import com.example.myapplication.navigation.AppNavGraph
 import com.example.myapplication.navigation.NavigationItem
+import com.example.myapplication.navigation.NavigationState
 import com.example.myapplication.navigation.rememberNavigationState
-import com.example.myapplication.presintation.ViewModelFactory
 import com.example.myapplication.presintation.comment.CommentsScreen
+import com.example.myapplication.presintation.getApplicationComponent
 import com.example.myapplication.presintation.news.ActionStatistic
 import com.example.myapplication.presintation.news.NewsFeedState
 import com.example.myapplication.presintation.news.NewsFeedViewModel
 import com.example.myapplication.presintation.news.PostCard
+import kotlinx.coroutines.flow.SharedFlow
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun NewsScreen(viewModelFactory: ViewModelFactory) {
-    val viewModel: NewsFeedViewModel = viewModel(factory = viewModelFactory)
+fun NewsScreen() {
+
+    val component = getApplicationComponent()
+    val viewModel: NewsFeedViewModel = viewModel(factory = component.getViewModelFactory())
     val screenState = viewModel.screenState.collectAsState(NewsFeedState.Initial)
     val listItem = listOf(NavigationItem.Home, NavigationItem.Favorite, NavigationItem.Profile)
     val navController = rememberNavigationState()
@@ -68,6 +72,19 @@ fun NewsScreen(viewModelFactory: ViewModelFactory) {
         onItemRemove = viewModel::removeFeed,
         onLoadNextFeed = viewModel::loadNextNewsFeed
     )
+
+    NewsScreenComponent(navController, listItem, action, screenState)
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+private fun NewsScreenComponent(
+    navController: NavigationState,
+    listItem: List<NavigationItem>,
+    action: ActionStatistic,
+    screenState: State<NewsFeedState>
+) {
 
     Scaffold(
         bottomBar = {
@@ -116,7 +133,9 @@ fun NewsScreen(viewModelFactory: ViewModelFactory) {
         )
 
     }
+
 }
+
 
 @Composable
 fun NewScreen(text: String) {
@@ -191,13 +210,17 @@ private fun FeedPosts(
     isNextFrom: Boolean,
     onCommentItemClick: (FeedPost) -> Unit
 ) {
+
     LazyColumn(
         modifier = Modifier
             .padding(bottom = 100.dp)
             .padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(feedPosts, key = { it.id }) { model ->
+        items(feedPosts,
+            key = { it.hashCode() }
+        ) { model ->
+
             val dismiss = rememberDismissState()
 
             if (dismiss.isDismissed(DismissDirection.EndToStart)) {
@@ -240,9 +263,6 @@ private fun FeedPosts(
             } else {
                 SideEffect {
                     action.onLoadNextFeed()
-
-
-//                    sdkfhs;jhdf;sd
                 }
             }
         }

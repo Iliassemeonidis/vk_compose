@@ -149,7 +149,7 @@ class NewsFeedRepositoryImpl @Inject constructor(
         refreshListFlow.emit(feedPosts)
     }
 
-    override fun getWallListFeedPost() = userFeedPosts
+    override fun getWallListFeedPost(): StateFlow<List<FeedPost>> = userFeedPosts
 
     override fun getFeedPostsComment(feedPost: FeedPost): StateFlow<CommentsState> = flow {
         val response = apiService.getComments(
