@@ -9,9 +9,10 @@ import com.example.myapplication.domain.entity.StatisticsItem
 import com.example.myapplication.domain.entity.StatisticsType
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 import kotlin.math.absoluteValue
 
-object NewsFeedMapper {
+class NewsFeedMapper @Inject constructor()  {
 
     fun mapResponseToPosts(newsFeedResponseDto: NewsFeedResponseDto): List<FeedPost> {
         val mapperResultFeedPost = mutableListOf<FeedPost>()

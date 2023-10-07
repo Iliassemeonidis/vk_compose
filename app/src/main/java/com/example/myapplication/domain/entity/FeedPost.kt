@@ -5,6 +5,7 @@ import android.os.Parcelable
 import androidx.navigation.NavType
 import com.google.gson.Gson
 import kotlinx.parcelize.Parcelize
+import javax.inject.Inject
 
 @Parcelize
 data class FeedPost(

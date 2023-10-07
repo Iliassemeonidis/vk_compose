@@ -46,6 +46,7 @@ import com.example.myapplication.domain.entity.FeedPost
 import com.example.myapplication.navigation.AppNavGraph
 import com.example.myapplication.navigation.NavigationItem
 import com.example.myapplication.navigation.rememberNavigationState
+import com.example.myapplication.presintation.ViewModelFactory
 import com.example.myapplication.presintation.comment.CommentsScreen
 import com.example.myapplication.presintation.news.ActionStatistic
 import com.example.myapplication.presintation.news.NewsFeedState
@@ -55,8 +56,8 @@ import com.example.myapplication.presintation.news.PostCard
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun NewsScreen() {
-    val viewModel: NewsFeedViewModel = viewModel()
+fun NewsScreen(viewModelFactory: ViewModelFactory) {
+    val viewModel: NewsFeedViewModel = viewModel(factory = viewModelFactory)
     val screenState = viewModel.screenState.collectAsState(NewsFeedState.Initial)
     val listItem = listOf(NavigationItem.Home, NavigationItem.Favorite, NavigationItem.Profile)
     val navController = rememberNavigationState()
@@ -107,7 +108,7 @@ fun NewsScreen() {
                     onBackPress = {
                         navController.navController.popBackStack()
                     },
-                    feedPost = feedPost
+                    feedPost = feedPost,
                 )
             },
             favoriteNavigateDestination = { NewScreen("Favorite") },

@@ -1,9 +1,7 @@
 package com.example.myapplication.presintation.news
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.myapplication.data.repository.NewsFeedRepositoryImpl
 import com.example.myapplication.domain.entity.FeedPost
 import com.example.myapplication.domain.usecases.ChangeLikeStatusUseCase
 import com.example.myapplication.domain.usecases.DeletePostUseCase
@@ -15,16 +13,14 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class NewsFeedViewModel(application: Application) : AndroidViewModel(application) {
-
-    private val repository = NewsFeedRepositoryImpl(application = application)
-
-    val getWallFeedPostUseCase = GetWallFeedPostUseCase(repository)
-
-    val loadNextDataUseCase = LoadNextDataUseCase(repository)
-    val changeLikeStatusUseCase = ChangeLikeStatusUseCase(repository)
-    val deletePostUseCase = DeletePostUseCase(repository)
+class NewsFeedViewModel @Inject constructor(
+    private val getWallFeedPostUseCase: GetWallFeedPostUseCase,
+    private val loadNextDataUseCase: LoadNextDataUseCase,
+    private val changeLikeStatusUseCase: ChangeLikeStatusUseCase,
+    private val deletePostUseCase: DeletePostUseCase
+) : ViewModel() {
 
     private val recommendationsFlow = getWallFeedPostUseCase()
 
@@ -42,10 +38,11 @@ class NewsFeedViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             loadNextDataFlow
                 .emit(
-                NewsFeedState.Post(
-                feedPosts = recommendationsFlow.value,
-                nextFrom = true
-            ))
+                    NewsFeedState.Post(
+                        feedPosts = recommendationsFlow.value,
+                        nextFrom = true
+                    )
+                )
             loadNextDataUseCase()
         }
     }

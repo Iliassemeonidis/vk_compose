@@ -16,19 +16,31 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.myapplication.domain.entity.LoginAppState
+import com.example.myapplication.presintation.NewsFeedApplication
+import com.example.myapplication.presintation.ViewModelFactory
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.vk.api.sdk.VK
 import com.vk.api.sdk.auth.VKScope
+import javax.inject.Inject
 
 class LoginActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelFactory
+
+    val component by lazy {
+        (application as NewsFeedApplication).component
+    }
+
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
+        component.inject(this)
         super.onCreate(savedInstanceState)
 
         setContent {
             MyApplicationTheme {
 
-                val vm: LoginViewModel = viewModel()
+                val vm: LoginViewModel = viewModel(factory = viewModelFactory)
 
                 val result = vm.authState.collectAsState(LoginAppState.InProgress)
 
@@ -47,7 +59,7 @@ class LoginActivity : ComponentActivity() {
                         launcher.launch(arrayListOf(VKScope.WALL, VKScope.FRIENDS))
                     }}
                     LoginAppState.Success -> {
-                        StatApp()
+                        StatApp(viewModelFactory)
                     }
                 }
             }
@@ -56,13 +68,13 @@ class LoginActivity : ComponentActivity() {
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     @Composable
-    private fun StatApp() {
+    private fun StatApp(viewModelFactory: ViewModelFactory) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            NewsScreen()
+            NewsScreen(viewModelFactory)
         }
     }
 }

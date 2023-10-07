@@ -40,19 +40,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.myapplication.R
 import com.example.myapplication.domain.entity.FeedPost
+import com.example.myapplication.presintation.NewsFeedApplication
 
 @Composable
 fun CommentsScreen(
     onBackPress: () -> Unit,
-    feedPost: FeedPost
+    feedPost: FeedPost,
 ) {
 
-    val viewModel: CommentViewModel = viewModel(
-        factory = CommentViewModelFactory(
-            application = LocalContext.current.applicationContext,
-            feedPost = feedPost
-        )
-    )
+    val component = (LocalContext.current.applicationContext as NewsFeedApplication).component
+        .getCommentsScreenComponentFactory()
+        .create(feedPost)
+        .getViewModelFactory()
+
+    val viewModel: CommentViewModel = viewModel(factory = component)
     val screenState = viewModel.screenState.collectAsState(CommentScreenState.Initial)
 
     when (val currentState = screenState.value) {

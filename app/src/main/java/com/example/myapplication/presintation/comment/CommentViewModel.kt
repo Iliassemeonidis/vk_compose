@@ -1,21 +1,16 @@
 package com.example.myapplication.presintation.comment
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
-import com.example.myapplication.data.repository.NewsFeedRepositoryImpl
 import com.example.myapplication.domain.entity.FeedPost
 import com.example.myapplication.domain.usecases.GetCommentsUseCase
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
+import javax.inject.Inject
 
-class CommentViewModel(
-    feedPost: FeedPost,
-    application: Context
+class CommentViewModel @Inject constructor(
+    private val feedPost: FeedPost,
+    private val getCommentsUseCase: GetCommentsUseCase
 ) : ViewModel() {
-
-    private val repository = NewsFeedRepositoryImpl(application = application)
-
-    private val getCommentsUseCase = GetCommentsUseCase(repository)
 
     val screenState = getCommentsUseCase(feedPost)
         .map {

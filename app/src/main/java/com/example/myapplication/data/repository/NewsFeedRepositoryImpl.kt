@@ -1,10 +1,8 @@
 package com.example.myapplication.data.repository
 
-import android.content.Context
 import android.util.Log
 import com.example.myapplication.data.mapper.NewsFeedMapper
-import com.example.myapplication.data.mapper.NewsFeedMapper.mapResponseToComment
-import com.example.myapplication.data.network.ApiFactory
+import com.example.myapplication.data.network.ApiService
 import com.example.myapplication.domain.entity.FeedPost
 import com.example.myapplication.domain.entity.LoginAppState
 import com.example.myapplication.domain.entity.StatisticsItem
@@ -24,10 +22,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
-class NewsFeedRepositoryImpl(application: Context) : NewsFeedRepository {
+class NewsFeedRepositoryImpl @Inject constructor(
+    private val apiService: ApiService,
+    private val newsFeedMapper: NewsFeedMapper,
+    private val keyValueStorage: VKPreferencesKeyValueStorage
+    ) : NewsFeedRepository {
 
-    private val keyValueStorage = VKPreferencesKeyValueStorage(application)
     private val token
         get() = VKAccessToken.restore(keyValueStorage)
 
@@ -57,12 +59,12 @@ class NewsFeedRepositoryImpl(application: Context) : NewsFeedRepository {
             }
             val responseDto =
                 if (startFrom == null) {
-                    ApiFactory.apiService.loadUserNewsfeed(getAccessToken())
+                    apiService.loadUserNewsfeed(getAccessToken())
                 } else {
-                    ApiFactory.apiService.loadUserNewsfeed(getAccessToken(), startFrom)
+                    apiService.loadUserNewsfeed(getAccessToken(), startFrom)
                 }
             nextFrom = responseDto.newsFeed.nextFrom
-            val result = NewsFeedMapper.mapResponseToPosts(responseDto)
+            val result = newsFeedMapper.mapResponseToPosts(responseDto)
             _feedPosts.addAll(result)
             emit(feedPosts)
         }
@@ -108,13 +110,13 @@ class NewsFeedRepositoryImpl(application: Context) : NewsFeedRepository {
 
     override suspend fun changeLikeStatus(feedPost: FeedPost) {
         val response = if (feedPost.isLiked) {
-            ApiFactory.apiService.deleteLike(
+            apiService.deleteLike(
                 token = getAccessToken(),
                 itemId = feedPost.postId,
                 postId = feedPost.id,
             )
         } else {
-            ApiFactory.apiService.addLike(
+            apiService.addLike(
                 token = getAccessToken(),
                 itemId = feedPost.postId,
                 postId = feedPost.id
@@ -134,7 +136,7 @@ class NewsFeedRepositoryImpl(application: Context) : NewsFeedRepository {
     }
 
     override suspend fun deletePost(feedPost: FeedPost) {
-        val response = ApiFactory.apiService.ignoreFeed(
+        val response = apiService.ignoreFeed(
             token = getAccessToken(),
             itemId = feedPost.postId,
             postId = feedPost.id,
@@ -150,14 +152,14 @@ class NewsFeedRepositoryImpl(application: Context) : NewsFeedRepository {
     override fun getWallListFeedPost() = userFeedPosts
 
     override fun getFeedPostsComment(feedPost: FeedPost): StateFlow<CommentsState> = flow {
-        val response = ApiFactory.apiService.getComments(
+        val response = apiService.getComments(
             token = getAccessToken(),
             postId = feedPost.postId,
             ownerId = feedPost.id,
             extended = 1,
             fields = feedPost.userPhoto
         )
-        emit(mapResponseToComment(response))
+        emit(newsFeedMapper.mapResponseToComment(response))
     }
         .map { CommentsState.Success(comment = it) as CommentsState }
         .retry(2) { true }
