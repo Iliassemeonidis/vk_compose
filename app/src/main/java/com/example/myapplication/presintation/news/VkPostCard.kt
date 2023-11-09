@@ -53,11 +53,9 @@ fun PostCard(
         Text(
             text = feedPost.contentText,
             maxLines = 5,
-
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(8.dp)
         )
-
         AsyncImage(
             model = feedPost.contentImageUrl,
             modifier = Modifier.wrapContentWidth(),
