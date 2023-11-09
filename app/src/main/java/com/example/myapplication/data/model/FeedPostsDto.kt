@@ -7,7 +7,7 @@ data class FeedPostsDto(
     @SerializedName("date") val publishDate: Long,
     @SerializedName("post_id") val post_id: Long,
     @SerializedName("comments") val comments: PostCommentDto,
-    @SerializedName("attachments") val attachments: List<AttachmentsDto>,
+    @SerializedName("attachments") val attachments: List<AttachmentsDto>?,
     @SerializedName("is_favorite") val isFavorite: Boolean,
     @SerializedName("likes") val likes: LikesDto,
     @SerializedName("reposts") val reposts: RepostsDto,

@@ -24,8 +24,8 @@ class NewsFeedMapper @Inject constructor()  {
             val userGroup =
                 groups.find { it.groupId.absoluteValue == item.id.absoluteValue } ?: return@forEach
 
-            //fixme разобраться в краше
-            if (item.attachments == null) return@forEach
+//            //fixme разобраться в краше
+//            if (item.attachments == null) return@forEach
 
             val feedPost = FeedPost(
                 id = item.id.toLong(),
@@ -35,10 +35,10 @@ class NewsFeedMapper @Inject constructor()  {
                 groupName = userGroup.groupName,
                 publishDate = mapDateFormat(item.publishDate * 1000),
                 contentText = item.text,
-                contentImageUrl = item.attachments.firstOrNull()?.photo?.image?.lastOrNull()?.url,
+                contentImageUrl = item.attachments?.firstOrNull()?.photo?.image?.lastOrNull()?.url,
                 isLiked = item.likes.userLikes > 0,
                 statistics = listOf(
-                    StatisticsItem(StatisticsType.VIEWS, count = item.views.count ?: 0),
+                    StatisticsItem(StatisticsType.VIEWS, count = item.views.count.or(0)),
                     StatisticsItem(StatisticsType.SHARE, count = item.reposts.count),
                     StatisticsItem(StatisticsType.COMMENT, count = item.comments.count),
                     StatisticsItem(StatisticsType.FAVORITE, count = item.likes.count),

@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.myapplication.R
@@ -36,7 +37,7 @@ import com.example.myapplication.ui.theme.DarkRed
 data class ActionStatistic(
     val onChangeLikeStatus: (FeedPost) -> Unit,
     val onItemRemove: (FeedPost) -> Unit,
-    val onLoadNextFeed : () -> Unit
+    val onLoadNextFeed: () -> Unit
 )
 
 @Composable
@@ -51,6 +52,10 @@ fun PostCard(
 
         Text(
             text = feedPost.contentText,
+            maxLines = 5,
+
+
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(8.dp)
         )
 
@@ -131,8 +136,10 @@ private fun IconWithText(
             onItemClickListener()
         }
     }
-    Row(verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+    ) {
         Icon(
             modifier = Modifier.size(20.dp),
             painter = painterResource(id = imageVector),
