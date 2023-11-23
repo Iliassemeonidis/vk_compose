@@ -9,7 +9,8 @@ import retrofit2.http.Query
 
 interface ApiService {
 
-    //    @GET("newsfeed.get?v=5.131")
+    //    @GET("newsfeed.get?v=5.131") ывфы
+    //    Тут новый  комент
     @GET("newsfeed.getRecommended?v=5.131")
     suspend fun loadUserNewsfeed(@Query("access_token") token: String)
             : NewsFeedResponseDto
